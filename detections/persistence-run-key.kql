@@ -1,0 +1,30 @@
+// Detection: Persistence via registry Run keys
+// Table: Event (Microsoft-Windows-Sysmon)
+// EventID: 13 (Registry value set)
+// MITRE ATT&CK: T1547.001 (Registry Run Keys / Startup Folder)
+// Severity: Medium
+// False positives: Software installers and enterprise agents write Run keys;
+//   baseline expected publishers and paths before paging anyone.
+// Status: Template — expand TargetObject allowlists after first private dry-run.
+// Notes: No live firing claimed. Covers Run and RunOnce value sets only, not service creation.
+
+Event
+| where TimeGenerated > ago(24h)
+| where Source == "Microsoft-Windows-Sysmon"
+| where EventID == 13
+| extend TargetObject = extract(@"Name=""TargetObject"">([^<]*)", 1, EventData)
+| extend Details = extract(@"Name=""Details"">([^<]*)", 1, EventData)
+| extend Image = extract(@"Name=""Image"">([^<]*)", 1, EventData)
+| extend User = extract(@"Name=""User"">([^<]*)", 1, EventData)
+| extend EventType = extract(@"Name=""EventType"">([^<]*)", 1, EventData)
+| where isnotempty(TargetObject)
+// Single backslashes: @"" strings are verbatim, so \\ would match two literal backslashes.
+| where TargetObject has_any (
+    @"\CurrentVersion\Run",
+    @"\CurrentVersion\RunOnce",
+    @"\CurrentVersion\RunOnceEx",
+    @"\CurrentVersion\Policies\Explorer\Run"
+)
+| where EventType =~ "SetValue" or isempty(EventType)
+| project TimeGenerated, Computer, User, Image, TargetObject, Details, EventType, EventID
+| sort by TimeGenerated desc

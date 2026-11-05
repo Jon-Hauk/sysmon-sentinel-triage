@@ -1,0 +1,36 @@
+// Detection: Process started from user-writable path (AppData / Temp)
+// Table: Event (Microsoft-Windows-Sysmon)
+// EventID: 1 (Process Create)
+// MITRE ATT&CK: T1036 (Masquerading); T1204.002 (User Execution: Malicious File) related
+// Severity: Low-Medium
+// False positives: Many legit apps install or run updaters under AppData\Local; expect noise.
+//   Start in hunting mode; promote to alert only after allowlisting known good Image hashes/paths.
+// Status: Template — add hash / Signer allowlists when available in your EventData.
+// Notes: No live firing claimed.
+
+Event
+| where TimeGenerated > ago(24h)
+| where Source == "Microsoft-Windows-Sysmon"
+| where EventID == 1
+| extend Image = extract(@"Name=""Image"">([^<]*)", 1, EventData)
+| extend CommandLine = extract(@"Name=""CommandLine"">([^<]*)", 1, EventData)
+| extend ParentImage = extract(@"Name=""ParentImage"">([^<]*)", 1, EventData)
+| extend User = extract(@"Name=""User"">([^<]*)", 1, EventData)
+| extend Hashes = extract(@"Name=""Hashes"">([^<]*)", 1, EventData)
+| extend ProcessGuid = extract(@"Name=""ProcessGuid"">([^<]*)", 1, EventData)
+| where isnotempty(Image)
+| where Image has_any (
+    @"\AppData\Local\",
+    @"\AppData\Roaming\",
+    @"\AppData\Local\Temp\",
+    @"\Temp\",
+    @"\Users\Public\"
+)
+| where not(Image has_any (
+    // Common noisy-but-often-legit updaters — refine privately; do not treat as a complete allowlist
+    @"\Microsoft\EdgeUpdate\",
+    @"\Google\Update\",
+    @"\Programs\Microsoft VS Code\"
+))
+| project TimeGenerated, Computer, User, Image, ParentImage, CommandLine, Hashes, ProcessGuid, EventID
+| sort by TimeGenerated desc

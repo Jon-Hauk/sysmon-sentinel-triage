@@ -1,0 +1,26 @@
+// Detection: Encoded PowerShell command line
+// Table: Event (Microsoft-Windows-Sysmon)
+// EventID: 1 (Process Create)
+// MITRE ATT&CK: T1059.001 (Command and Scripting Interpreter: PowerShell)
+// Severity: Medium
+// False positives: Legitimate admin scripts and software installers sometimes use -EncodedCommand;
+//   tune with allowlists for known parent processes, signed paths, and change windows.
+// Status: Template — validate field names against your workspace before enabling as a rule.
+// Notes: No live firing claimed. Adjust lookback / entity mapping in Sentinel rule UI.
+
+Event
+| where TimeGenerated > ago(24h)
+| where Source == "Microsoft-Windows-Sysmon"
+| where EventID == 1
+| extend CommandLine = extract(@"Name=""CommandLine"">([^<]*)", 1, EventData)
+| extend Image = extract(@"Name=""Image"">([^<]*)", 1, EventData)
+| extend ParentImage = extract(@"Name=""ParentImage"">([^<]*)", 1, EventData)
+| extend User = extract(@"Name=""User"">([^<]*)", 1, EventData)
+| extend ProcessGuid = extract(@"Name=""ProcessGuid"">([^<]*)", 1, EventData)
+| where isnotempty(CommandLine)
+// PowerShell accepts any unambiguous prefix of -EncodedCommand, the -ec alias, and / in place of -.
+| where CommandLine matches regex @"(?i)(^|\s)[-/](e|ec|en|enc|enco|encod|encode|encoded|encodedc\w*)(\s|$)"
+| where Image has_any ("powershell.exe", "pwsh.exe", "powershell_ise.exe")
+    or CommandLine has_any ("powershell", "pwsh")
+| project TimeGenerated, Computer, User, Image, ParentImage, CommandLine, ProcessGuid, EventID
+| sort by TimeGenerated desc

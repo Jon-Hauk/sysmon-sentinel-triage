@@ -1,0 +1,8 @@
+{
+  "_label": "SYNTHETIC — not a real host event",
+  "TimeGenerated": "2026-08-20T18:03:12Z",
+  "Computer": "PC-01",
+  "Source": "Microsoft-Windows-Sysmon",
+  "EventID": 10,
+  "EventData": "<Data Name=\"SourceImage\">C:\\Users\\user01\\AppData\\Local\\Temp\\not-a-real-tool.exe</Data><Data Name=\"TargetImage\">C:\\Windows\\System32\\lsass.exe</Data><Data Name=\"GrantedAccess\">0x1010</Data><Data Name=\"SourceUser\">CONTOSO\\user01</Data><Data Name=\"TargetUser\">NT AUTHORITY\\SYSTEM</Data><Data Name=\"CallTrace\">C:\\Windows\\SYSTEM32\\ntdll.dll+0x0|UNKNOWN</Data>"
+}

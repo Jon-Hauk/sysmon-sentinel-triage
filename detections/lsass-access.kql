@@ -1,0 +1,29 @@
+// Detection: Suspicious process access to LSASS
+// Table: Event (Microsoft-Windows-Sysmon)
+// EventID: 10 (Process Access)
+// MITRE ATT&CK: T1003.001 (OS Credential Dumping: LSASS Memory)
+// Severity: High
+// False positives: Antivirus, EDR, backup agents, and Windows Defender often open LSASS with
+//   limited rights; filter by GrantedAccess masks and known security-product Image paths.
+// Status: Template — tune GrantedAccess and CallTrace after reviewing private baselines.
+// Notes: No live firing claimed. Do not paste real memory dumps or credential material into this repo.
+
+Event
+| where TimeGenerated > ago(24h)
+| where Source == "Microsoft-Windows-Sysmon"
+| where EventID == 10
+| extend TargetImage = extract(@"Name=""TargetImage"">([^<]*)", 1, EventData)
+| extend SourceImage = extract(@"Name=""SourceImage"">([^<]*)", 1, EventData)
+| extend GrantedAccess = extract(@"Name=""GrantedAccess"">([^<]*)", 1, EventData)
+| extend CallTrace = extract(@"Name=""CallTrace"">([^<]*)", 1, EventData)
+| extend SourceUser = extract(@"Name=""SourceUser"">([^<]*)", 1, EventData)
+| extend TargetUser = extract(@"Name=""TargetUser"">([^<]*)", 1, EventData)
+| where isnotempty(TargetImage)
+| where TargetImage endswith @"\lsass.exe" or TargetImage =~ @"C:\Windows\System32\lsass.exe"
+| where isnotempty(GrantedAccess)
+// Masks that can read LSASS memory (PROCESS_VM_READ, 0x10) or duplicate a handle to it
+// (PROCESS_DUP_HANDLE, 0x40). 0x1000 alone is query-only, so it stays out. Not exhaustive.
+// in~ matters: hex case varies, and a plain `in` silently misses 0x1FFFFF (PROCESS_ALL_ACCESS).
+| where GrantedAccess in~ ("0x1010", "0x1410", "0x1438", "0x143a", "0x1fffff", "0x40")
+| project TimeGenerated, Computer, SourceImage, SourceUser, TargetImage, TargetUser, GrantedAccess, CallTrace, EventID
+| sort by TimeGenerated desc

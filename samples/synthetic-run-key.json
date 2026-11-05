@@ -1,0 +1,8 @@
+{
+  "_label": "SYNTHETIC — not a real host event",
+  "TimeGenerated": "2026-10-05T07:30:22Z",
+  "Computer": "PC-01",
+  "Source": "Microsoft-Windows-Sysmon",
+  "EventID": 13,
+  "EventData": "<Data Name=\"EventType\">SetValue</Data><Data Name=\"Image\">C:\\Users\\user01\\AppData\\Local\\Temp\\updater-fake.exe</Data><Data Name=\"User\">CONTOSO\\user01</Data><Data Name=\"TargetObject\">HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Run\\FakeUpdater</Data><Data Name=\"Details\">C:\\Users\\user01\\AppData\\Local\\Temp\\updater-fake.exe</Data>"
+}

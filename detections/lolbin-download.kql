@@ -1,0 +1,33 @@
+// Detection: LOLBin download via certutil or bitsadmin
+// Table: Event (Microsoft-Windows-Sysmon)
+// EventID: 1 (Process Create)
+// MITRE ATT&CK: T1105 (Ingress Tool Transfer); T1218 (System Binary Proxy Execution) related patterns
+// Severity: High
+// False positives: Rare legitimate use of certutil -urlcache / bitsadmin transfer in IT scripts;
+//   prefer allowlisting known management accounts and approved package mirrors.
+// Status: Template — validate against your Sysmon config and workspace schema.
+// Notes: No live firing claimed.
+
+Event
+| where TimeGenerated > ago(24h)
+| where Source == "Microsoft-Windows-Sysmon"
+| where EventID == 1
+| extend CommandLine = extract(@"Name=""CommandLine"">([^<]*)", 1, EventData)
+| extend Image = extract(@"Name=""Image"">([^<]*)", 1, EventData)
+| extend ParentImage = extract(@"Name=""ParentImage"">([^<]*)", 1, EventData)
+| extend User = extract(@"Name=""User"">([^<]*)", 1, EventData)
+| extend ProcessGuid = extract(@"Name=""ProcessGuid"">([^<]*)", 1, EventData)
+| where isnotempty(Image) and isnotempty(CommandLine)
+| extend ImageLeaf = tolower(tostring(split(Image, @"\")[-1]))
+| where
+    (
+        ImageLeaf == "certutil.exe"
+        and CommandLine has_any ("-urlcache", "-decode", "-encode", "http://", "https://")
+    )
+    or
+    (
+        ImageLeaf == "bitsadmin.exe"
+        and CommandLine has_any ("/transfer", "/download", "/addfile", "http://", "https://")
+    )
+| project TimeGenerated, Computer, User, Image, ParentImage, CommandLine, ProcessGuid, EventID
+| sort by TimeGenerated desc

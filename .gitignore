@@ -1,0 +1,26 @@
+# Secrets and local env
+.env
+.env.*
+!.env.example
+
+# Raw / private telemetry (never commit)
+*.evtx
+raw/
+exports/
+*.log
+*.csv
+*.xml
+
+# Local OS / editor noise
+.DS_Store
+Thumbs.db
+*.swp
+*~
+.idea/
+.vscode/
+*.code-workspace
+
+# PowerShell / .NET local
+*.user
+bin/
+obj/

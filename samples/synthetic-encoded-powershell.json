@@ -1,0 +1,8 @@
+{
+  "_label": "SYNTHETIC — not a real host event",
+  "TimeGenerated": "2026-06-15T14:22:01Z",
+  "Computer": "PC-01",
+  "Source": "Microsoft-Windows-Sysmon",
+  "EventID": 1,
+  "EventData": "<Data Name=\"Image\">C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe</Data><Data Name=\"CommandLine\">powershell.exe -NoProfile -EncodedCommand SQBuAHYAbwBrAGUALQBXAGUAYgBSAGUAcQB1AGUAcwB0ACAAaAB0AHQAcABzADoALwAvADEAOQAyAC4AMAAuADIALgAxADAALwA=</Data><Data Name=\"User\">CONTOSO\\user01</Data><Data Name=\"ParentImage\">C:\\Windows\\explorer.exe</Data><Data Name=\"ProcessGuid\">{00000000-0000-4000-8000-000000000001}</Data>"
+}

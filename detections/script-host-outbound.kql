@@ -1,0 +1,30 @@
+// Detection: Suspicious outbound network connection from script hosts
+// Table: Event (Microsoft-Windows-Sysmon)
+// EventID: 3 (Network connection)
+// MITRE ATT&CK: T1059 (Command and Scripting Interpreter); T1071 (Application Layer Protocol)
+// Severity: Medium
+// False positives: Package managers, update helpers, and developer tooling may cause
+//   powershell/wscript/cscript/mshta outbound connections; allowlist known destinations.
+// Status: Template — restrict DestinationIp / DestinationHostname after private baselines.
+// Notes: No live firing claimed. Samples use documentation IPs only (192.0.2.0/24).
+
+Event
+| where TimeGenerated > ago(24h)
+| where Source == "Microsoft-Windows-Sysmon"
+| where EventID == 3
+| extend Image = extract(@"Name=""Image"">([^<]*)", 1, EventData)
+| extend User = extract(@"Name=""User"">([^<]*)", 1, EventData)
+| extend Protocol = extract(@"Name=""Protocol"">([^<]*)", 1, EventData)
+| extend DestinationIp = extract(@"Name=""DestinationIp"">([^<]*)", 1, EventData)
+| extend DestinationPort = extract(@"Name=""DestinationPort"">([^<]*)", 1, EventData)
+| extend DestinationHostname = extract(@"Name=""DestinationHostname"">([^<]*)", 1, EventData)
+| extend Initiated = extract(@"Name=""Initiated"">([^<]*)", 1, EventData)
+| where isnotempty(Image)
+| extend ImageLeaf = tolower(tostring(split(Image, @"\")[-1]))
+| where ImageLeaf in ("powershell.exe", "pwsh.exe", "wscript.exe", "cscript.exe", "mshta.exe", "cmd.exe")
+| where Initiated =~ "true" or isempty(Initiated)
+| where isnotempty(DestinationIp)
+// Optional private filter: exclude RFC1918 if you only care about egress to the Internet
+// | where not(ipv4_is_private(DestinationIp))
+| project TimeGenerated, Computer, User, Image, Protocol, DestinationIp, DestinationPort, DestinationHostname, Initiated, EventID
+| sort by TimeGenerated desc

@@ -1,0 +1,8 @@
+{
+  "_label": "SYNTHETIC — not a real host event",
+  "TimeGenerated": "2026-09-01T11:45:00Z",
+  "Computer": "PC-01",
+  "Source": "Microsoft-Windows-Sysmon",
+  "EventID": 3,
+  "EventData": "<Data Name=\"Image\">C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe</Data><Data Name=\"User\">CONTOSO\\user01</Data><Data Name=\"Protocol\">tcp</Data><Data Name=\"DestinationIp\">192.0.2.50</Data><Data Name=\"DestinationPort\">443</Data><Data Name=\"DestinationHostname\">example.invalid</Data><Data Name=\"Initiated\">true</Data><Data Name=\"SourceIp\">192.0.2.1</Data>"
+}
